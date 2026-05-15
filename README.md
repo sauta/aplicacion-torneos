@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏆 Aplicación de Torneos
 
 Sistema completo de gestión de torneos con brackets eliminatorios, desarrollado con React 19 y Redux Toolkit.
@@ -129,3 +130,7 @@ Ver [guía completa de testing](src/features/tournament/__tests__/README.md) par
 ## 📝 Licencia
 
 Proyecto privado - Todos los derechos reservados
+=======
+# aplicacion-torneos
+una aplicacion que te auuda a gestionar torneos
+>>>>>>> 66e181361ebe6bc96808c9fb158079a051dff6fd
