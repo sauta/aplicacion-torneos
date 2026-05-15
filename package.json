@@ -9,6 +9,7 @@
     "vite": "vite --host 127.0.0.1 --port 5173",
     "api": "node scripts/api-server.cjs",
     "build": "vite build",
+    "start": "node scripts/server.cjs",
     "preview": "vite preview --host 127.0.0.1 --port 4173",
     "test": "vitest",
     "test:ui": "vitest --ui",
