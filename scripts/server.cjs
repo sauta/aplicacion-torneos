@@ -12,8 +12,33 @@ const port = Number(process.env.PORT || process.env.API_PORT || 3001);
 
 fs.mkdirSync(uploadsDir, { recursive: true });
 
+const defaultDB = {
+  tournaments: [
+    {
+      id: "main",
+      name: "Torneo Principal",
+      game: "Juego competitivo",
+      format: "single-elimination",
+      bestOf: 3,
+      banner: "",
+      logo: "",
+      participants: [],
+      rounds: []
+    }
+  ]
+};
+
 if (!fs.existsSync(dbPath)) {
-  fs.writeFileSync(dbPath, JSON.stringify({ tournaments: [] }, null, 2));
+  fs.writeFileSync(dbPath, JSON.stringify(defaultDB, null, 2));
+  console.log(`[server] Created db.json at ${dbPath}`);
+} else {
+  console.log(`[server] Using existing db.json at ${dbPath}`);
+  try {
+    fs.accessSync(dbPath, fs.constants.W_OK);
+    console.log(`[server] db.json is writable`);
+  } catch (err) {
+    console.error(`[server] ERROR: db.json is not writable!`, err.message);
+  }
 }
 
 function sanitizeFileName(value) {
@@ -48,7 +73,9 @@ const upload = multer({
 });
 
 const server = jsonServer.create();
-const router = jsonServer.router(dbPath);
+const router = jsonServer.router(dbPath, {
+  _isFake: false // Asegurar que se escriba al archivo
+});
 const middlewares = jsonServer.defaults({
   logger: true
 });
