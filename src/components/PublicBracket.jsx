@@ -179,7 +179,7 @@ function BracketConnectors({ rounds, mapRef }) {
   );
 }
 
-export function PublicBracket() {
+export function PublicBracket({ onRefresh, isRefreshing }) {
   const tournament = useSelector(selectTournament);
   const participantMap = useSelector(selectParticipantMap);
   const champion = useSelector(selectChampion);
@@ -192,6 +192,16 @@ export function PublicBracket() {
           <span className="eyebrow">Vista publica</span>
           <h2>Cuadro del torneo</h2>
         </div>
+        {onRefresh && (
+          <button
+            className="btn"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            title="Actualizar datos del torneo"
+          >
+            {isRefreshing ? "⟳" : "🔄"}
+          </button>
+        )}
       </div>
 
       {!tournament.rounds.length ? (

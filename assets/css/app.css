@@ -819,6 +819,21 @@ img {
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animación para botón de refresh */
+.btn:disabled {
+  animation: spin 1s linear infinite;
+  opacity: 0.7;
+}
+
 /* Ocultar líneas antiguas */
 .public-round:not(.is-final-round) .public-match-banner::after,
 .public-round:not(.is-final-round) .public-match-banner::before {
