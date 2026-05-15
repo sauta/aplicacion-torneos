@@ -9,12 +9,14 @@ import {
   makeShareUrl,
   readJsonFile
 } from "../services/tournamentApi";
+import { exportTournamentZip } from "../services/exportService";
 
 export function DataTools({ notify }) {
   const dispatch = useDispatch();
   const tournament = useSelector(selectTournament);
   const inputRef = useRef(null);
   const [shareLink, setShareLink] = useState(() => makeShareUrl(tournament));
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     setShareLink(makeShareUrl(tournament));
@@ -24,6 +26,19 @@ export function DataTools({ notify }) {
     const link = makeShareUrl(tournament);
     setShareLink(link);
     return link;
+  }
+
+  async function handleExportZip() {
+    setIsExporting(true);
+    try {
+      await exportTournamentZip(tournament);
+      notify("ZIP exportado correctamente");
+    } catch (error) {
+      notify("Error al exportar ZIP", "error");
+      console.error("Error exportando ZIP:", error);
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   async function handleImport(file) {
@@ -68,6 +83,14 @@ export function DataTools({ notify }) {
             }}
           >
             Exportar JSON
+          </button>
+          <button
+            className="btn btn-outline-primary"
+            type="button"
+            onClick={handleExportZip}
+            disabled={isExporting}
+          >
+            {isExporting ? "Exportando..." : "📦 Exportar ZIP completo"}
           </button>
           <label className="btn btn-outline-secondary mb-0" htmlFor="importJson">Importar JSON</label>
           <input
