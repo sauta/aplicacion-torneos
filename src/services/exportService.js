@@ -129,3 +129,121 @@ export async function exportTournamentZip(tournament) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Convierte un Blob a File para poder subirlo al servidor
+ * @param {Blob} blob - Blob de la imagen
+ * @param {string} filename - Nombre del archivo
+ * @returns {File} - File object
+ */
+function blobToFile(blob, filename) {
+  return new File([blob], filename, { type: blob.type });
+}
+
+/**
+ * Importa un torneo completo desde un archivo ZIP
+ * @param {File} zipFile - Archivo ZIP seleccionado por el usuario
+ * @param {Function} uploadImage - Función para subir imágenes al servidor
+ * @param {Function} onProgress - Callback opcional para reportar progreso (current, total, message)
+ * @returns {Promise<object>} - Objeto tournament con URLs actualizadas
+ */
+export async function importTournamentZip(zipFile, uploadImage, onProgress = null) {
+  // 1. Leer el archivo ZIP
+  const zip = await JSZip.loadAsync(zipFile);
+
+  // 2. Extraer el tournament.json
+  const tournamentFile = zip.file("tournament.json");
+  if (!tournamentFile) {
+    throw new Error("El ZIP no contiene un archivo tournament.json");
+  }
+
+  const tournamentText = await tournamentFile.async("text");
+  const tournament = JSON.parse(tournamentText);
+
+  // 3. Obtener todas las imágenes de la carpeta images/
+  const imagesFolder = zip.folder("images");
+  if (!imagesFolder) {
+    // Si no hay carpeta de imágenes, retornar el torneo tal cual
+    return tournament;
+  }
+
+  const imageFiles = [];
+  imagesFolder.forEach((relativePath, file) => {
+    if (!file.dir) {
+      imageFiles.push({ path: relativePath, file });
+    }
+  });
+
+  let uploadedCount = 0;
+  const totalImages = imageFiles.length;
+
+  // 4. Crear un mapa de nombres de archivo a URLs nuevas
+  const imageUrlMap = {};
+
+  for (const { path, file } of imageFiles) {
+    try {
+      if (onProgress) {
+        onProgress(uploadedCount + 1, totalImages, `Subiendo ${path}...`);
+      }
+
+      // Extraer el blob de la imagen
+      const blob = await file.async("blob");
+      
+      // Convertir a File
+      const fileObj = blobToFile(blob, path);
+
+      // Subir al servidor
+      const newUrl = await uploadImage(fileObj);
+
+      // Guardar en el mapa
+      imageUrlMap[path] = newUrl;
+
+      uploadedCount++;
+    } catch (error) {
+      console.warn(`No se pudo subir la imagen ${path}:`, error);
+      // Continuar con las demás imágenes
+    }
+  }
+
+  // 5. Actualizar las URLs en el torneo
+  
+  // Banner
+  if (tournament.banner) {
+    const bannerFiles = Object.keys(imageUrlMap).filter(k => k.startsWith("banner."));
+    if (bannerFiles.length > 0) {
+      tournament.banner = imageUrlMap[bannerFiles[0]];
+    }
+  }
+
+  // Logo
+  if (tournament.logo) {
+    const logoFiles = Object.keys(imageUrlMap).filter(k => k.startsWith("logo."));
+    if (logoFiles.length > 0) {
+      tournament.logo = imageUrlMap[logoFiles[0]];
+    }
+  }
+
+  // Participantes
+  if (tournament.participants) {
+    tournament.participants = tournament.participants.map(participant => {
+      if (participant.image) {
+        const participantFiles = Object.keys(imageUrlMap).filter(
+          k => k.startsWith(`participant_${participant.id}.`)
+        );
+        if (participantFiles.length > 0) {
+          return {
+            ...participant,
+            image: imageUrlMap[participantFiles[0]]
+          };
+        }
+      }
+      return participant;
+    });
+  }
+
+  if (onProgress) {
+    onProgress(totalImages, totalImages, "Importación completa");
+  }
+
+  return tournament;
+}
