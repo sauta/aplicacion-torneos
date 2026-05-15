@@ -20,8 +20,8 @@ function ProtectedRoute({ loaded, notify, status }) {
 
   const handleLogout = () => {
     logout();
-    // Usar replace para forzar recarga completa
-    window.location.replace("/login");
+    // Redirigir a la vista pública después del logout
+    window.location.replace("/view");
   };
 
   if (!auth) {

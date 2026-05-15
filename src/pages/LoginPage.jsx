@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { login } from "../services/authService";
 
 export function LoginPage({ onLoginSuccess }) {
@@ -81,6 +82,10 @@ export function LoginPage({ onLoginSuccess }) {
             {isLoading ? "Verificando..." : "Iniciar Sesión"}
           </button>
         </form>
+
+        <Link to="/view" className="login-back-link">
+          ← Volver a la vista pública
+        </Link>
 
         <div className="login-footer">
           <small>Credenciales de prueba disponibles en la documentación</small>

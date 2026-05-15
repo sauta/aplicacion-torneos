@@ -1312,6 +1312,28 @@ img {
   cursor: not-allowed;
 }
 
+.login-back-link {
+  display: block;
+  text-align: center;
+  margin-top: 16px;
+  padding: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.login-back-link:hover {
+  color: var(--text);
+  background: rgba(15, 118, 110, 0.05);
+  text-decoration: none;
+}
+
+[data-theme="dark"] .login-back-link:hover {
+  background: rgba(20, 184, 166, 0.1);
+}
+
 .login-footer {
   margin-top: 24px;
   text-align: center;
