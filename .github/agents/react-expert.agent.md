@@ -104,3 +104,134 @@ Reglas estrictas de Redux:
 - NO mezclas lógica async en reducers (usa `createAsyncThunk` o RTK Query)
 - NO ignores el bundle size al sugerir librerías; siempre mencionas alternativas ligeras
 - NO creas abstracciones genéricas para código que se usa una sola vez
+
+## Características Implementadas (Sesión: mayo 2026)
+
+### 1. Sistema de Temas (Dark Mode)
+
+**Implementación:**
+- **Componente**: `src/components/ThemeToggle.jsx` - Toggle de tema con persistencia en localStorage
+- **CSS Variables**: `assets/css/app.css` con atributo `data-theme="dark"` en el root HTML
+- **Paleta Dark Mode**:
+  - Background: `--page: #0f172a` (navy profundo)
+  - Surface: `--surface: #1e293b` (gris pizarra)
+  - Accent: `--accent: #14b8a6` (turquesa/teal)
+  - Text: `--ink: #e2e8f0` (gris claro)
+  - Borders: `--line: #334155`
+
+**Patrón usado:**
+```jsx
+// ThemeToggle.jsx - Hook para tema persistente
+const [theme, setTheme] = useState(() => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme) return savedTheme;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+});
+
+useEffect(() => {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+}, [theme]);
+```
+
+**Lecciones aprendidas:**
+- CSS Custom Properties + data attributes > clases CSS para theming
+- `prefers-color-scheme` como fallback mejora UX
+- localStorage simple es suficiente para persistencia de tema (no necesita Redux)
+
+### 2. Mejoras de UI/UX
+
+**Cambios implementados:**
+
+1. **Iconos sobre texto**: Reemplazamos botones con texto largo por emojis/símbolos:
+   - ↑ / ↓ para reordenar participantes
+   - 🖼️ para cambiar imagen
+   - ❌ para quitar participante
+   - 🗑️ para eliminar
+   - ☀️ / 🌙 para toggle de tema
+
+2. **Números ocultos**: `.participant-index { display: none }` - La foto + nombre son suficientes
+
+3. **Logo transparente**: `background: transparent` en `.tournament-logo` para que se integre con el banner
+
+4. **Contraste en Dark Mode**:
+   - Labels y títulos: `color: #e2e8f0 !important`
+   - Inputs: `background: #1e293b`, `color: #e2e8f0`
+   - Botones de archivo: Estilos específicos para `::file-selector-button`
+   - Focus states: `border-color: #14b8a6` con box-shadow
+
+**Especificidad CSS importante:**
+```css
+/* Para inputs de archivo se necesita ambos selectores */
+[data-theme="dark"] input[type="file"]::file-selector-button,
+[data-theme="dark"] input[type="file"]::-webkit-file-upload-button {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+}
+```
+
+### 3. Deployment a Producción
+
+**Configuración creada:**
+
+- **`scripts/server.cjs`**: Servidor unificado que sirve frontend (carpeta `dist/`) + backend API en el mismo proceso
+- **`render.yaml`**: Blueprint para deployment automático en Render.com
+- **`package.json`**: Script `"start": "node scripts/server.cjs"` para producción
+- **`DEPLOYMENT.md`**: Guía completa de deployment
+
+**Patrón servidor producción:**
+```javascript
+// Servir archivos estáticos + SPA fallback
+if (fs.existsSync(distPath)) {
+  server.use(express.static(distPath));
+  
+  server.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+      next(); // Rutas API/uploads continúan al router
+      return;
+    }
+    res.sendFile(path.join(distPath, "index.html")); // SPA fallback
+  });
+}
+```
+
+**Hosting recomendado:** 
+- ✅ Render.com (free tier, soporta Node + uploads)
+- ✅ Railway.app (alternativa similar)
+- ❌ Vercel/Netlify (solo frontend estático, no sirven para este proyecto con backend complejo)
+
+### 4. Buenas Prácticas Aplicadas
+
+- **Componentes pequeños y enfocados**: `ThemeToggle` es un componente independiente y reutilizable
+- **CSS co-located**: Estilos de tema en el mismo archivo CSS global, usando scoping con `[data-theme]`
+- **Progressive enhancement**: La app funciona sin tema guardado, usa media query como fallback
+- **Accesibilidad**: Atributos `title` en botones con iconos para tooltips
+- **No sobre-ingeniería**: useState + localStorage > context o Redux para un toggle simple
+
+### 5. Comandos de Deployment
+
+```bash
+# Build para producción
+pnpm build
+
+# Probar servidor de producción localmente
+pnpm start
+
+# Git workflow
+git add -A
+git commit -m "Descripción clara del cambio"
+git push origin main
+
+# Render.com hace deploy automático desde GitHub
+```
+
+---
+
+## Próximas mejoras sugeridas
+
+- [ ] Extraer colores del tema a `theme.js` para facilitar personalización
+- [ ] Añadir `framer-motion` para transiciones de tema más suaves
+- [ ] Considerar `sonner` o `react-hot-toast` para notificaciones más vistosas
+- [ ] Implementar lazy loading en rutas con `React.lazy()` + `Suspense`
+- [ ] Evaluar `@tanstack/react-table` si se necesitan tablas más complejas de participantes
+
