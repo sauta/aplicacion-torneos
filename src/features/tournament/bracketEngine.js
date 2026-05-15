@@ -92,19 +92,23 @@ function normalizeScorePair(scores, bestOf) {
   return [first, second];
 }
 
-function resolveWinner(match, bestOf) {
+function resolveWinner(match, bestOf, roundIndex) {
   const slots = match.slots || [null, null];
   const scores = match.scores || [0, 0];
   const target = winsNeeded(bestOf);
 
-  if (slots[0] && !slots[1]) {
-    return slots[0];
+  // BYE automático solo en la primera ronda
+  if (roundIndex === 0) {
+    if (slots[0] && !slots[1]) {
+      return slots[0];
+    }
+
+    if (!slots[0] && slots[1]) {
+      return slots[1];
+    }
   }
 
-  if (!slots[0] && slots[1]) {
-    return slots[1];
-  }
-
+  // En rondas posteriores, ambos participantes deben estar presentes
   if (!slots[0] || !slots[1]) {
     return null;
   }
@@ -153,7 +157,7 @@ export function recalculateBracket(tournament) {
       }
 
       match.scores = normalizeScorePair(match.scores, bestOf);
-      match.winner = resolveWinner(match, bestOf);
+      match.winner = resolveWinner(match, bestOf, roundIndex);
 
       if (roundIndex < tournament.rounds.length - 1) {
         const nextMatch = tournament.rounds[roundIndex + 1][Math.floor(matchIndex / 2)];
