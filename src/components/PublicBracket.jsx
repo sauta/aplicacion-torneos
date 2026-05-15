@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 import { Avatar } from "./Avatar";
 import { ChampionStrip } from "./ChampionStrip";
+import { RefreshIcon } from "./RefreshIcon";
 import { getRoundLabel, winsNeeded } from "../features/tournament/bracketEngine";
 import { selectChampion, selectParticipantMap, selectTournament } from "../features/tournament/selectors";
 import { participantLabel } from "../lib/text";
@@ -199,7 +200,7 @@ export function PublicBracket({ onRefresh, isRefreshing }) {
             disabled={isRefreshing}
             title="Actualizar datos del torneo"
           >
-            {isRefreshing ? "⟳" : "🔄"}
+            <RefreshIcon className={isRefreshing ? "refresh-icon-spinning" : "refresh-icon"} />
           </button>
         )}
       </div>

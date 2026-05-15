@@ -828,10 +828,59 @@ img {
   }
 }
 
+/* Estilos para el ícono de refresh */
+.refresh-icon {
+  display: block;
+  color: var(--accent);
+  transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.btn-refresh:hover .refresh-icon {
+  color: var(--accent-2);
+  transform: rotate(-30deg);
+}
+
+.refresh-icon-spinning {
+  display: block;
+  color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+
 /* Animación solo para botón de refresh cuando está cargando */
 .btn-refresh:disabled {
-  animation: spin 1s linear infinite;
   opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  min-width: auto;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+}
+
+.btn-refresh:hover:not(:disabled) .refresh-icon {
+  color: white;
+}
+
+.btn-refresh:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+[data-theme="dark"] .btn-refresh:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
 }
 
 /* Ocultar líneas antiguas */
