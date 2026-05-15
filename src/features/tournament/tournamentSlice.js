@@ -129,6 +129,25 @@ const tournamentSlice = createSlice({
       const { roundIndex, matchIndex, slotIndex, score } = action.payload;
       setMatchScore(state, roundIndex, matchIndex, slotIndex, score);
     },
+    swapMatchParticipants: (state, action) => {
+      const { fromRound, fromMatch, fromSlot, toRound, toMatch, toSlot } = action.payload;
+      
+      // Validar que las rondas y matches existen
+      if (!state.rounds[fromRound]?.[fromMatch] || !state.rounds[toRound]?.[toMatch]) {
+        return;
+      }
+      
+      const sourceMatch = state.rounds[fromRound][fromMatch];
+      const targetMatch = state.rounds[toRound][toMatch];
+      
+      // Intercambiar los participantes
+      const temp = sourceMatch.slots[fromSlot];
+      sourceMatch.slots[fromSlot] = targetMatch.slots[toSlot];
+      targetMatch.slots[toSlot] = temp;
+      
+      // Recalcular el bracket después del cambio
+      recalculateBracket(state);
+    },
     importTournament: (state, action) => {
       return normalizeTournament(action.payload);
     }
@@ -144,6 +163,7 @@ export const {
   reorderParticipant,
   resetTournament,
   setScore,
+  swapMatchParticipants,
   updateEvent,
   updateImages,
   updateParticipant

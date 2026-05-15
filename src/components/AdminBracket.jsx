@@ -1,9 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 import { Avatar } from "./Avatar";
 import { ChampionStrip } from "./ChampionStrip";
 import { getRoundLabel, hasScores, winsNeeded } from "../features/tournament/bracketEngine";
 import { selectChampion, selectParticipantMap, selectTournament } from "../features/tournament/selectors";
-import { rebuildTournamentBracket, setScore } from "../features/tournament/tournamentSlice";
+import { rebuildTournamentBracket, setScore, swapMatchParticipants } from "../features/tournament/tournamentSlice";
 import { participantLabel } from "../lib/text";
 
 function ScoreControl({ match, slotIndex }) {
@@ -45,7 +46,7 @@ function ScoreControl({ match, slotIndex }) {
   );
 }
 
-function MatchSide({ match, slotIndex, participantMap }) {
+function MatchSide({ match, slotIndex, participantMap, onDragStart, onDragOver, onDrop, isDragOver }) {
   const id = match.slots?.[slotIndex] || null;
   const opponentId = match.slots?.[slotIndex === 0 ? 1 : 0] || null;
   const participant = id ? participantMap.get(id) : null;
@@ -54,13 +55,44 @@ function MatchSide({ match, slotIndex, participantMap }) {
   const className = [
     "match-side",
     id && match.winner === id ? "is-winner" : "",
-    !id ? "is-muted" : ""
+    !id ? "is-muted" : "",
+    isDragOver ? "drag-over" : ""
   ].filter(Boolean).join(" ");
   const name = participant ? participant.name : (isBye ? "BYE" : "Por definir");
   const label = participant ? participantLabel(participant) : (isPending ? "Pendiente" : "Avance automatico");
 
+  const handleDragStart = (e) => {
+    if (!participant) {
+      e.preventDefault();
+      return;
+    }
+    onDragStart(e, match, slotIndex);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    onDragOver(match, slotIndex);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    onDrop(match, slotIndex);
+  };
+
+  const handleDragLeave = () => {
+    onDragOver(null, null);
+  };
+
   return (
-    <div className={className}>
+    <div 
+      className={className}
+      draggable={!!participant}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragLeave={handleDragLeave}
+      style={{ cursor: participant ? 'grab' : 'default' }}
+    >
       {participant ? <Avatar participant={participant} /> : <div className="avatar avatar-fallback">-</div>}
       <div className="match-player">
         <strong title={name}>{name}</strong>
@@ -85,15 +117,31 @@ function MatchStatus({ match, participantMap, bestOf }) {
   return `Primero en llegar a ${winsNeeded(bestOf)} partidas`;
 }
 
-function MatchCard({ match, participantMap, bestOf }) {
+function MatchCard({ match, participantMap, bestOf, onDragStart, onDragOver, onDrop, dragOverSlot }) {
   return (
     <article className={`match-card ${match.winner ? "is-complete" : ""}`}>
       <div className="match-label">
         <span>VS {match.index + 1}</span>
         <span>Mejor de {bestOf}</span>
       </div>
-      <MatchSide match={match} slotIndex={0} participantMap={participantMap} />
-      <MatchSide match={match} slotIndex={1} participantMap={participantMap} />
+      <MatchSide 
+        match={match} 
+        slotIndex={0} 
+        participantMap={participantMap}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        isDragOver={dragOverSlot?.round === match.round && dragOverSlot?.match === match.index && dragOverSlot?.slot === 0}
+      />
+      <MatchSide 
+        match={match} 
+        slotIndex={1} 
+        participantMap={participantMap}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        isDragOver={dragOverSlot?.round === match.round && dragOverSlot?.match === match.index && dragOverSlot?.slot === 1}
+      />
       <div className="match-status">
         <MatchStatus match={match} participantMap={participantMap} bestOf={bestOf} />
       </div>
@@ -106,6 +154,9 @@ export function AdminBracket({ notify }) {
   const tournament = useSelector(selectTournament);
   const participantMap = useSelector(selectParticipantMap);
   const champion = useSelector(selectChampion);
+  
+  const [dragSource, setDragSource] = useState(null);
+  const [dragOverSlot, setDragOverSlot] = useState(null);
 
   function rebuild() {
     if (hasScores(tournament) && !window.confirm("Esto reiniciara los resultados actuales. Continuar?")) {
@@ -115,6 +166,54 @@ export function AdminBracket({ notify }) {
     dispatch(rebuildTournamentBracket());
     notify("Bracket generado");
   }
+
+  const handleDragStart = (e, match, slotIndex) => {
+    setDragSource({
+      round: match.round,
+      match: match.index,
+      slot: slotIndex,
+      participantId: match.slots[slotIndex]
+    });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (match, slotIndex) => {
+    if (match === null) {
+      setDragOverSlot(null);
+      return;
+    }
+    setDragOverSlot({
+      round: match.round,
+      match: match.index,
+      slot: slotIndex
+    });
+  };
+
+  const handleDrop = (targetMatch, targetSlot) => {
+    if (!dragSource) return;
+
+    // No permitir drop en el mismo slot
+    if (dragSource.round === targetMatch.round && 
+        dragSource.match === targetMatch.index && 
+        dragSource.slot === targetSlot) {
+      setDragSource(null);
+      setDragOverSlot(null);
+      return;
+    }
+
+    dispatch(swapMatchParticipants({
+      fromRound: dragSource.round,
+      fromMatch: dragSource.match,
+      fromSlot: dragSource.slot,
+      toRound: targetMatch.round,
+      toMatch: targetMatch.index,
+      toSlot: targetSlot
+    }));
+
+    setDragSource(null);
+    setDragOverSlot(null);
+    notify("Participantes intercambiados");
+  };
 
   return (
     <section className="bracket-panel">
@@ -156,6 +255,10 @@ export function AdminBracket({ notify }) {
                       key={match.id}
                       match={match}
                       participantMap={participantMap}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDrop={handleDrop}
+                      dragOverSlot={dragOverSlot}
                     />
                   ))}
                 </section>
