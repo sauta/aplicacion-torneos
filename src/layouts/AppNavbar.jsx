@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function AppNavbar({ mode }) {
   return (
@@ -7,7 +8,8 @@ export function AppNavbar({ mode }) {
         <Link className="navbar-brand fw-semibold" to={mode === "admin" ? "/admin" : "/view"}>
           {mode === "admin" ? "Torneo Admin" : "Torneo"}
         </Link>
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 align-items-center">
+          <ThemeToggle />
           {mode === "admin" ? (
             <Link className="btn btn-outline-light btn-sm" to="/view">
               Vista publica

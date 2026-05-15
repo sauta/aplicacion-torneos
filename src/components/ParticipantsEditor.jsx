@@ -151,22 +151,23 @@ export function ParticipantsEditor({ notify }) {
                 onDragEnd={() => setDraggedId(null)}
               >
                 <div className="participant-order">
-                  <div className="participant-index">{index + 1}</div>
                   <button
-                    className="btn btn-outline-secondary btn-sm"
+                    className="btn btn-outline-secondary btn-sm btn-icon"
                     type="button"
                     disabled={index === 0}
                     onClick={() => moveParticipant(index, index - 1, "Participante subido")}
+                    title="Subir"
                   >
-                    Subir
+                    ↑
                   </button>
                   <button
-                    className="btn btn-outline-secondary btn-sm"
+                    className="btn btn-outline-secondary btn-sm btn-icon"
                     type="button"
                     disabled={index === tournament.participants.length - 1}
                     onClick={() => moveParticipant(index, index + 1, "Participante bajado")}
+                    title="Bajar"
                   >
-                    Bajar
+                    ↓
                   </button>
                 </div>
                 <Avatar participant={participant} />
@@ -193,8 +194,8 @@ export function ParticipantsEditor({ notify }) {
                     <option value="team">Equipo</option>
                   </select>
                   <div className="participant-actions">
-                    <label className="btn btn-outline-secondary btn-sm mb-0">
-                      Imagen
+                    <label className="btn btn-outline-secondary btn-sm btn-icon mb-0" title="Agregar imagen">
+                      🖼️
                       <input
                         className="d-none"
                         type="file"
@@ -203,17 +204,18 @@ export function ParticipantsEditor({ notify }) {
                       />
                     </label>
                     <button
-                      className="btn btn-outline-secondary btn-sm"
+                      className="btn btn-outline-secondary btn-sm btn-icon"
                       type="button"
                       onClick={() => {
                         dispatch(updateParticipant({ id: participant.id, changes: { image: "" } }));
                         notify("Imagen quitada");
                       }}
+                      title="Quitar imagen"
                     >
-                      Quitar imagen
+                      ❌
                     </button>
                     <button
-                      className="btn btn-outline-danger btn-sm"
+                      className="btn btn-outline-danger btn-sm btn-icon"
                       type="button"
                       onClick={() => {
                         if (!canResetScores()) {
@@ -223,8 +225,9 @@ export function ParticipantsEditor({ notify }) {
                         dispatch(removeParticipant(participant.id));
                         notify("Participante eliminado");
                       }}
+                      title="Eliminar participante"
                     >
-                      Eliminar
+                      🗑️
                     </button>
                   </div>
                 </div>
