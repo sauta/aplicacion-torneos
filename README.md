@@ -68,6 +68,31 @@ src/components/
 | `pnpm dev` | Inicia frontend + API en desarrollo |
 | `pnpm build` | Genera build de producción |
 | `pnpm preview` | Preview del build de producción |
+| `pnpm test` | Ejecuta tests en modo watch |
+| `pnpm test:run` | Ejecuta tests una vez (CI) |
+| `pnpm test:ui` | Abre UI interactiva de Vitest |
+| `pnpm test:coverage` | Genera reporte de cobertura |
+
+## 🧪 Testing
+
+El proyecto cuenta con **95+ tests unitarios** cubriendo la lógica crítica:
+
+- ✅ **bracketEngine.js**: 50+ tests (construcción de brackets, scores, validaciones)
+- ✅ **tournamentSlice.js**: 30+ tests (Redux actions, reducers, state mutations)
+- ✅ **selectors.js**: 15+ tests (selectores memoizados, estadísticas)
+
+**Stack**: Vitest 2.x + Testing Library + jest-dom
+
+```bash
+# Ejecutar tests
+pnpm test
+
+# Ver cobertura
+pnpm test:coverage
+```
+
+Ver [guía completa de testing](src/features/tournament/__tests__/README.md) para más detalles.
+
 
 ## 🛠️ Configuración Vite
 
