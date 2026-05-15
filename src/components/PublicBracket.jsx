@@ -99,7 +99,7 @@ function BracketConnectors({ rounds, mapRef }) {
           const mapOffset = mapRect.left;
           const mapTop = mapRect.top;
 
-          // Punto de inicio (derecha del match actual)
+          // Punto de inicio (derecha del match actual, centro vertical)
           const startX = matchRect.right - mapOffset;
           const startY = matchRect.top + matchRect.height / 2 - mapTop;
 
@@ -110,9 +110,15 @@ function BracketConnectors({ rounds, mapRef }) {
           if (targetMatch) {
             const targetRect = targetMatch.getBoundingClientRect();
             
-            // Punto final (izquierda del match siguiente)
+            // Determinar si es el match superior o inferior del par
+            const isTopMatch = matchIndex % 2 === 0;
+            
+            // Punto final en el match de destino
+            // Si es el match superior, conectar a 1/3 de la altura
+            // Si es el match inferior, conectar a 2/3 de la altura
             const endX = targetRect.left - mapOffset;
-            const endY = targetRect.top + targetRect.height / 2 - mapTop;
+            const targetYOffset = isTopMatch ? targetRect.height * 0.33 : targetRect.height * 0.67;
+            const endY = targetRect.top + targetYOffset - mapTop;
 
             // Puntos de control para la curva Bézier
             const controlOffset = (endX - startX) * 0.5;
