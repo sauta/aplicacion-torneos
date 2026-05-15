@@ -99,6 +99,10 @@ function BracketConnectors({ rounds, mapRef }) {
           const mapOffset = mapRect.left;
           const mapTop = mapRect.top;
 
+          // Obtener el match actual para verificar si tiene ganador
+          const currentMatch = round[matchIndex];
+          const hasWinner = currentMatch && currentMatch.winner;
+
           // Punto de inicio (derecha del match actual, centro vertical)
           const startX = matchRect.right - mapOffset;
           const startY = matchRect.top + matchRect.height / 2 - mapTop;
@@ -128,20 +132,30 @@ function BracketConnectors({ rounds, mapRef }) {
             const cp2Y = endY;
 
             // Crear path con curva Bézier cúbica
+            const pathD = `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`;
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`);
+            path.setAttribute('d', pathD);
             path.setAttribute('class', 'bracket-connector');
+            path.setAttribute('id', `path-${roundIndex}-${matchIndex}`);
             
             svg.appendChild(path);
 
-            // Agregar punto decorativo al inicio
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', startX);
-            circle.setAttribute('cy', startY);
-            circle.setAttribute('r', '4');
-            circle.setAttribute('class', 'bracket-connector-dot');
-            
-            svg.appendChild(circle);
+            // Solo agregar bolita animada si hay un ganador
+            if (hasWinner) {
+              // Crear círculo que se moverá a lo largo del path
+              const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              circle.setAttribute('r', '5');
+              circle.setAttribute('class', 'bracket-connector-dot-animated');
+              
+              // Crear animación de movimiento a lo largo del path
+              const animateMotion = document.createElementNS('http://www.w3.org/2000/svg', 'animateMotion');
+              animateMotion.setAttribute('dur', '3s');
+              animateMotion.setAttribute('repeatCount', 'indefinite');
+              animateMotion.setAttribute('path', pathD);
+              
+              circle.appendChild(animateMotion);
+              svg.appendChild(circle);
+            }
           }
         });
       });
