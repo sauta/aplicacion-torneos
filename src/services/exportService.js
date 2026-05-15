@@ -50,25 +50,24 @@ function getImageExtension(url, mimeType) {
  * @returns {object} - Objeto JSON del torneo
  */
 function createTournamentJson(tournament) {
+  // Formato compatible con la importación existente
   return {
-    version: "1.0",
-    exported: new Date().toISOString(),
-    tournament: {
-      name: tournament.name,
-      game: tournament.game,
-      bestOf: tournament.bestOf,
-      participants: tournament.participants.map(p => ({
-        id: p.id,
-        name: p.name,
-        kind: p.kind,
-        // Referencia relativa a la imagen en el ZIP
-        image: p.image ? `images/participant_${p.id}.jpg` : ""
-      })),
-      rounds: tournament.rounds,
-      // Referencias relativas para banner y logo
-      banner: tournament.banner ? "images/banner.jpg" : "",
-      logo: tournament.logo ? "images/logo.jpg" : ""
-    }
+    id: tournament.id || "main",
+    name: tournament.name,
+    game: tournament.game,
+    format: "single-elimination",
+    bestOf: tournament.bestOf,
+    // Rutas originales para importación directa (sin ZIP)
+    banner: tournament.banner || "",
+    logo: tournament.logo || "",
+    participants: tournament.participants.map(p => ({
+      id: p.id,
+      name: p.name,
+      kind: p.kind,
+      // Ruta original para importación directa
+      image: p.image || ""
+    })),
+    rounds: tournament.rounds
   };
 }
 
