@@ -99,11 +99,11 @@ describe('tournamentSlice', () => {
       expect(state.name).toBe('New Tournament Name');
     });
 
-    it('should trim and default empty names', () => {
+    it('should allow empty names and spaces', () => {
       store.dispatch(updateEvent({ field: 'name', value: '   ' }));
       const state = store.getState().tournament;
       
-      expect(state.name).toBe('Torneo Principal');
+      expect(state.name).toBe('   ');
     });
 
     it('should update game name', () => {

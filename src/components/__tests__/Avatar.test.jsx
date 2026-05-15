@@ -3,11 +3,22 @@ import { render, screen } from '@testing-library/react';
 import { Avatar } from '../Avatar';
 
 // Mock del módulo text.js
-vi.mock('../lib/text', () => ({
-  safeImage: vi.fn((image) => image || null),
+vi.mock('../../lib/text', () => ({
+  safeImage: vi.fn((image) => {
+    if (typeof image !== 'string') return '';
+    const value = image.trim();
+    if (value.startsWith('data:image/') || 
+        value.startsWith('http://') || 
+        value.startsWith('https://') ||
+        value.startsWith('/assets/') || 
+        value.startsWith('/uploads/')) {
+      return value;
+    }
+    return '';
+  }),
   initials: vi.fn((name) => {
     if (!name) return '?';
-    const parts = name.split(' ');
+    const parts = String(name).trim().split(/\s+/);
     if (parts.length >= 2) {
       return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
     }
@@ -24,9 +35,9 @@ describe('Avatar Component', () => {
         image: '/uploads/avatar.jpg'
       };
 
-      render(<Avatar participant={participant} />);
+      const { container } = render(<Avatar participant={participant} />);
       
-      const img = screen.getByRole('img');
+      const img = container.querySelector('img');
       expect(img).toBeInTheDocument();
       expect(img).toHaveAttribute('src', '/uploads/avatar.jpg');
     });
@@ -35,12 +46,12 @@ describe('Avatar Component', () => {
       const participant = {
         id: 'p1',
         name: 'Test',
-        image: '/test.jpg'
+        image: '/uploads/test.jpg'
       };
 
-      render(<Avatar participant={participant} className="custom-class" />);
+      const { container } = render(<Avatar participant={participant} className="custom-class" />);
       
-      const img = screen.getByRole('img');
+      const img = container.querySelector('img');
       expect(img).toHaveClass('avatar');
       expect(img).toHaveClass('custom-class');
     });
@@ -49,12 +60,12 @@ describe('Avatar Component', () => {
       const participant = {
         id: 'p1',
         name: 'Test',
-        image: '/test.jpg'
+        image: '/uploads/test.jpg'
       };
 
-      render(<Avatar participant={participant} />);
+      const { container } = render(<Avatar participant={participant} />);
       
-      const img = screen.getByRole('img');
+      const img = container.querySelector('img');
       expect(img).toHaveAttribute('alt', '');
     });
   });
@@ -146,12 +157,12 @@ describe('Avatar Component', () => {
       const participant = {
         id: 'p1',
         name: 'Test',
-        image: '/test.jpg'
+        image: '/uploads/test.jpg'
       };
 
-      render(<Avatar participant={participant} />);
+      const { container } = render(<Avatar participant={participant} />);
       
-      const img = screen.getByRole('img');
+      const img = container.querySelector('img');
       expect(img).toHaveClass('avatar');
       expect(img.className).toBe('avatar');
     });
@@ -171,12 +182,12 @@ describe('Avatar Component', () => {
       const participant = {
         id: 'p1',
         name: 'Test',
-        image: '/test.jpg'
+        image: '/uploads/test.jpg'
       };
 
-      render(<Avatar participant={participant} className="  " />);
+      const { container } = render(<Avatar participant={participant} className="  " />);
       
-      const img = screen.getByRole('img');
+      const img = container.querySelector('img');
       expect(img.className).toBe('avatar');
     });
 

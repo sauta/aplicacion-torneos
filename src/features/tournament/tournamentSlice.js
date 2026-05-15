@@ -41,11 +41,11 @@ const tournamentSlice = createSlice({
       const { field, value } = action.payload;
 
       if (field === "name") {
-        state.name = String(value || "").trim() || "Torneo Principal";
+        state.name = String(value || "");
       }
 
       if (field === "game") {
-        state.game = String(value || "").trim() || "Juego competitivo";
+        state.game = String(value || "");
       }
 
       if (field === "bestOf") {
