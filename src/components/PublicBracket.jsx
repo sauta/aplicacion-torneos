@@ -194,7 +194,7 @@ export function PublicBracket({ onRefresh, isRefreshing }) {
         </div>
         {onRefresh && (
           <button
-            className="btn"
+            className="btn btn-refresh"
             onClick={onRefresh}
             disabled={isRefreshing}
             title="Actualizar datos del torneo"
