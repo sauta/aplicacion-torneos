@@ -775,26 +775,64 @@ img {
   border-color: #9bd5c4;
 }
 
-.public-round:not(.is-final-round) .public-match-banner::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -43px;
-  width: 43px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), rgba(15, 118, 110, 0.22));
+/* Líneas SVG con curvas suaves */
+.bracket-connectors-svg {
+  overflow: visible;
 }
 
+.bracket-connector {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 4px rgba(15, 118, 110, 0.3));
+  animation: drawPath 0.8s ease-out forwards;
+}
+
+.bracket-connector-dot {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 6px rgba(15, 118, 110, 0.5));
+  animation: pulseConnector 2s ease-in-out infinite;
+}
+
+@keyframes drawPath {
+  from {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulseConnector {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Ocultar líneas antiguas */
+.public-round:not(.is-final-round) .public-match-banner::after,
 .public-round:not(.is-final-round) .public-match-banner::before {
-  content: "";
-  position: absolute;
-  top: calc(50% - 4px);
-  right: -48px;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  display: none;
+}
+
+[data-theme="dark"] .bracket-connector {
+  stroke: var(--accent);
+  opacity: 0.8;
+  filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.4));
+}
+
+[data-theme="dark"] .bracket-connector-dot {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(20, 184, 166, 0.6));
 }
 
 .public-match-head,
@@ -967,14 +1005,7 @@ img {
     width: 286px;
   }
 
-  .public-round:not(.is-final-round) .public-match-banner::after {
-    right: -35px;
-    width: 35px;
-  }
-
-  .public-round:not(.is-final-round) .public-match-banner::before {
-    right: -40px;
-  }
+  /* Líneas SVG se adaptan automáticamente */
 }
 
 @media (max-width: 540px) {

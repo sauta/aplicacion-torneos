@@ -1,4 +1,5 @@
 import { useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
 import { Avatar } from "./Avatar";
 import { ChampionStrip } from "./ChampionStrip";
 import { getRoundLabel, winsNeeded } from "../features/tournament/bracketEngine";
@@ -62,10 +63,107 @@ function PublicMatchBanner({ bestOf, match, participantMap }) {
   );
 }
 
+function BracketConnectors({ rounds, mapRef }) {
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    // Pequeño delay para asegurar que el DOM esté montado
+    const timer = setTimeout(() => {
+      if (!svgRef.current || !mapRef?.current || !rounds?.length) return;
+
+      const svg = svgRef.current;
+      const map = mapRef.current;
+      
+      // Limpiar paths existentes
+      svg.innerHTML = '';
+      
+      // Obtener dimensiones del contenedor
+      const mapRect = map.getBoundingClientRect();
+      svg.setAttribute('width', mapRect.width);
+      svg.setAttribute('height', mapRect.height);
+
+      // Para cada ronda excepto la final
+      rounds.slice(0, -1).forEach((round, roundIndex) => {
+        // Seleccionar directamente las secciones .public-round en lugar de usar nth-child
+        const allRoundElements = map.querySelectorAll('.public-round');
+        const currentRoundEl = allRoundElements[roundIndex];
+        const nextRoundEl = allRoundElements[roundIndex + 1];
+        
+        if (!currentRoundEl || !nextRoundEl) return;
+        
+        const roundElements = currentRoundEl.querySelectorAll('.public-match-banner');
+        const nextRoundElements = nextRoundEl.querySelectorAll('.public-match-banner');
+
+        roundElements.forEach((matchEl, matchIndex) => {
+          const matchRect = matchEl.getBoundingClientRect();
+          const mapOffset = mapRect.left;
+          const mapTop = mapRect.top;
+
+          // Punto de inicio (derecha del match actual)
+          const startX = matchRect.right - mapOffset;
+          const startY = matchRect.top + matchRect.height / 2 - mapTop;
+
+          // Calcular el match de destino en la siguiente ronda
+          const targetMatchIndex = Math.floor(matchIndex / 2);
+          const targetMatch = nextRoundElements[targetMatchIndex];
+
+          if (targetMatch) {
+            const targetRect = targetMatch.getBoundingClientRect();
+            
+            // Punto final (izquierda del match siguiente)
+            const endX = targetRect.left - mapOffset;
+            const endY = targetRect.top + targetRect.height / 2 - mapTop;
+
+            // Puntos de control para la curva Bézier
+            const controlOffset = (endX - startX) * 0.5;
+            const cp1X = startX + controlOffset;
+            const cp1Y = startY;
+            const cp2X = endX - controlOffset;
+            const cp2Y = endY;
+
+            // Crear path con curva Bézier cúbica
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`);
+            path.setAttribute('class', 'bracket-connector');
+            
+            svg.appendChild(path);
+
+            // Agregar punto decorativo al inicio
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', startX);
+            circle.setAttribute('cy', startY);
+            circle.setAttribute('r', '4');
+            circle.setAttribute('class', 'bracket-connector-dot');
+            
+            svg.appendChild(circle);
+          }
+        });
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [rounds]);
+
+  return (
+    <svg 
+      ref={svgRef}
+      className="bracket-connectors-svg"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        zIndex: 0
+      }}
+    />
+  );
+}
+
 export function PublicBracket() {
   const tournament = useSelector(selectTournament);
   const participantMap = useSelector(selectParticipantMap);
   const champion = useSelector(selectChampion);
+  const mapRef = useRef(null);
 
   return (
     <section className="bracket-panel public-bracket">
@@ -82,7 +180,8 @@ export function PublicBracket() {
         <>
           <ChampionStrip champion={champion} />
           <div className="public-bracket-scroll">
-            <div className="public-bracket-map">
+            <div className="public-bracket-map" ref={mapRef} style={{ position: 'relative' }}>
+              <BracketConnectors rounds={tournament.rounds} mapRef={mapRef} />
               {tournament.rounds.map((round, roundIndex) => (
                 <section
                   className={`public-round ${roundIndex === tournament.rounds.length - 1 ? "is-final-round" : ""}`}
