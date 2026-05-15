@@ -66,6 +66,7 @@ function PublicMatchBanner({ bestOf, match, participantMap }) {
 
 function BracketConnectors({ rounds, mapRef }) {
   const svgRef = useRef(null);
+  const hasAnimatedRef = useRef(false);
 
   useEffect(() => {
     // Pequeño delay para asegurar que el DOM esté montado
@@ -136,7 +137,9 @@ function BracketConnectors({ rounds, mapRef }) {
             const pathD = `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`;
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', pathD);
-            path.setAttribute('class', 'bracket-connector');
+            // Solo animar en la primera carga, no en actualizaciones
+            const pathClass = hasAnimatedRef.current ? 'bracket-connector bracket-connector-no-animation' : 'bracket-connector';
+            path.setAttribute('class', pathClass);
             path.setAttribute('id', `path-${roundIndex}-${matchIndex}`);
             
             svg.appendChild(path);
@@ -160,6 +163,9 @@ function BracketConnectors({ rounds, mapRef }) {
           }
         });
       });
+      
+      // Marcar que ya se animó la primera vez
+      hasAnimatedRef.current = true;
     }, 100);
 
     return () => clearTimeout(timer);

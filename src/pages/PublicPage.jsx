@@ -23,11 +23,11 @@ export function PublicPage() {
     }
   }, [dispatch]);
 
-  // Polling automático cada 10 segundos
+  // Polling automático cada 3 segundos
   useEffect(() => {
     const interval = setInterval(() => {
       refreshTournament();
-    }, 10000); // 10 segundos
+    }, 3000); // 3 segundos
 
     return () => clearInterval(interval);
   }, [refreshTournament]);

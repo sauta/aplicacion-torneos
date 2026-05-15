@@ -790,6 +790,11 @@ img {
   animation: drawPath 0.8s ease-out forwards;
 }
 
+/* Líneas sin animación para actualizaciones (no primera carga) */
+.bracket-connector-no-animation {
+  animation: none !important;
+}
+
 /* Bolitas animadas que se mueven a lo largo de las líneas */
 .bracket-connector-dot-animated {
   fill: var(--accent);
