@@ -8,6 +8,12 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
+    pool: 'forks', // Evita problemas de cierre de procesos
+    poolOptions: {
+      forks: {
+        singleFork: true
+      }
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],

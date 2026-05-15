@@ -219,25 +219,33 @@ export function PublicBracket({ onRefresh, isRefreshing }) {
           <div className="public-bracket-scroll">
             <div className="public-bracket-map" ref={mapRef} style={{ position: 'relative' }}>
               <BracketConnectors rounds={tournament.rounds} mapRef={mapRef} />
-              {tournament.rounds.map((round, roundIndex) => (
-                <section
-                  className={`public-round ${roundIndex === tournament.rounds.length - 1 ? "is-final-round" : ""}`}
-                  key={roundIndex}
-                  style={getPublicRoundStyle(roundIndex)}
-                >
-                  <div className="round-title">{getRoundLabel(roundIndex, tournament.rounds.length)}</div>
-                  <div className="public-match-list">
-                    {round.map((match) => (
-                      <PublicMatchBanner
-                        bestOf={tournament.bestOf}
-                        key={match.id}
-                        match={match}
-                        participantMap={participantMap}
-                      />
-                    ))}
-                  </div>
-                </section>
-              ))}
+              {tournament.rounds.map((round, roundIndex) => {
+                // Filtrar matches que tienen al menos un participante
+                const visibleMatches = round.filter(match => match.slots?.[0] || match.slots?.[1]);
+                
+                // No mostrar ronda vacía
+                if (visibleMatches.length === 0) return null;
+                
+                return (
+                  <section
+                    className={`public-round ${roundIndex === tournament.rounds.length - 1 ? "is-final-round" : ""}`}
+                    key={roundIndex}
+                    style={getPublicRoundStyle(roundIndex)}
+                  >
+                    <div className="round-title">{getRoundLabel(roundIndex, tournament.rounds.length)}</div>
+                    <div className="public-match-list">
+                      {visibleMatches.map((match) => (
+                        <PublicMatchBanner
+                          bestOf={tournament.bestOf}
+                          key={match.id}
+                          match={match}
+                          participantMap={participantMap}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
           </div>
         </>

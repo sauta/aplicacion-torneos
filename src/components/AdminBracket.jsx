@@ -246,23 +246,31 @@ export function AdminBracket({ notify }) {
           <ChampionStrip champion={champion} />
           <div className="bracket-scroll">
             <div className="bracket-board">
-              {tournament.rounds.map((round, roundIndex) => (
-                <section className="round-column" key={roundIndex}>
-                  <div className="round-title">{getRoundLabel(roundIndex, tournament.rounds.length)}</div>
-                  {round.map((match) => (
-                    <MatchCard
-                      bestOf={tournament.bestOf}
-                      key={match.id}
-                      match={match}
-                      participantMap={participantMap}
-                      onDragStart={handleDragStart}
-                      onDragOver={handleDragOver}
-                      onDrop={handleDrop}
-                      dragOverSlot={dragOverSlot}
-                    />
-                  ))}
-                </section>
-              ))}
+              {tournament.rounds.map((round, roundIndex) => {
+                // Filtrar matches que tienen al menos un participante
+                const visibleMatches = round.filter(match => match.slots?.[0] || match.slots?.[1]);
+                
+                // No mostrar ronda vacía
+                if (visibleMatches.length === 0) return null;
+                
+                return (
+                  <section className="round-column" key={roundIndex}>
+                    <div className="round-title">{getRoundLabel(roundIndex, tournament.rounds.length)}</div>
+                    {visibleMatches.map((match) => (
+                      <MatchCard
+                        bestOf={tournament.bestOf}
+                        key={match.id}
+                        match={match}
+                        participantMap={participantMap}
+                        onDragStart={handleDragStart}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        dragOverSlot={dragOverSlot}
+                      />
+                    ))}
+                  </section>
+                );
+              })}
             </div>
           </div>
         </>
