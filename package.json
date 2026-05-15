@@ -20,6 +20,7 @@
     "@reduxjs/toolkit": "^2.5.0",
     "express": "^4.19.2",
     "json-server": "0.17.4",
+    "jszip": "^3.10.1",
     "multer": "^2.0.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -29,7 +30,9 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "2.1.9",
     "@vitest/ui": "^2.1.8",
     "jsdom": "^25.0.1",
     "vite": "^6.0.11",

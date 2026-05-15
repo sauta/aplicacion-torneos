@@ -132,7 +132,19 @@ export async function uploadImage(file) {
   });
 
   if (!response.ok) {
-    throw new Error("No se pudo subir la imagen");
+    let errorMessage = "No se pudo subir la imagen";
+    
+    try {
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    } catch {
+      // Si no se puede parsear el JSON, usar el mensaje por defecto
+    }
+    
+    console.error(`Error al subir imagen: ${response.status} - ${errorMessage}`);
+    throw new Error(errorMessage);
   }
 
   const payload = await response.json();
