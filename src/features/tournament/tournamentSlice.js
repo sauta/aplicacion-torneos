@@ -4,6 +4,7 @@ import {
   buildBracket,
   createId,
   hasScores,
+  isTournamentStarted,
   normalizeBestOf,
   recalculateBracket,
   setMatchScore
@@ -102,7 +103,16 @@ const tournamentSlice = createSlice({
       recalculateBracket(state);
     },
     removeParticipant: (state, action) => {
-      state.participants = state.participants.filter((item) => item.id !== action.payload);
+      const participantId = action.payload;
+      
+      // Si el torneo ya empezó, no permitir eliminar
+      // (En el futuro podríamos implementar WO aquí)
+      if (isTournamentStarted(state)) {
+        console.warn('No se puede eliminar un participante una vez iniciado el torneo');
+        return;
+      }
+      
+      state.participants = state.participants.filter((item) => item.id !== participantId);
       rebuildBracket(state);
     },
     reorderParticipant: (state, action) => {

@@ -224,3 +224,32 @@ export function getRoundLabel(roundIndex, totalRounds) {
 
   return `Ronda ${roundIndex + 1}`;
 }
+
+/**
+ * Verifica si el torneo ya inició (tiene al menos un match con scores)
+ */
+export function isTournamentStarted(tournament) {
+  return hasScores(tournament);
+}
+
+/**
+ * Cuenta cuántos matches tienen al menos un participante real (no BYE ni vacío)
+ */
+export function countActiveMatches(tournament) {
+  if (!tournament?.rounds?.length) return 0;
+  
+  return tournament.rounds.reduce((total, round) => {
+    return total + round.filter(match => 
+      match.slots?.[0] && match.slots?.[1] // Ambos slots con participantes
+    ).length;
+  }, 0);
+}
+
+/**
+ * Detecta si un match es un BYE (solo un participante)
+ */
+export function isMatchBye(match) {
+  const hasSlot0 = Boolean(match.slots?.[0]);
+  const hasSlot1 = Boolean(match.slots?.[1]);
+  return (hasSlot0 && !hasSlot1) || (!hasSlot0 && hasSlot1);
+}

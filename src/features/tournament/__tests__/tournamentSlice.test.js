@@ -310,6 +310,33 @@ describe('tournamentSlice', () => {
       // Bracket should be rebuilt
       expect(state2.rounds).toBeDefined();
     });
+
+    it('should NOT remove participant if tournament has started', () => {
+      // Add participants and generate bracket
+      store.dispatch(addParticipant({ name: 'P1', kind: 'player' }));
+      store.dispatch(addParticipant({ name: 'P2', kind: 'player' }));
+      store.dispatch(rebuildTournamentBracket());
+      
+      // Set a score to mark tournament as started
+      const state1 = store.getState().tournament;
+      store.dispatch(setScore({
+        roundIndex: 0,
+        matchIndex: 0,
+        slotIndex: 0,
+        score: 1
+      }));
+      
+      const state2 = store.getState().tournament;
+      const participantId = state2.participants[0].id;
+      const participantCount = state2.participants.length;
+      
+      // Try to remove participant - should NOT work
+      store.dispatch(removeParticipant(participantId));
+      const state3 = store.getState().tournament;
+      
+      expect(state3.participants).toHaveLength(participantCount);
+      expect(state3.participants.find(p => p.id === participantId)).toBeDefined();
+    });
   });
 
   describe('reorderParticipant', () => {

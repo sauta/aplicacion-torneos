@@ -218,7 +218,9 @@ export function ParticipantsEditor({ notify }) {
                       className="btn btn-outline-danger btn-sm btn-icon"
                       type="button"
                       onClick={() => {
-                        if (!canResetScores()) {
+                        // No permitir eliminar si el torneo ya empezó
+                        if (hasScores(tournament)) {
+                          notify("No se puede eliminar participantes una vez iniciado el torneo", "error");
                           return;
                         }
 
