@@ -61,14 +61,24 @@ const upload = multer({
     }
   }),
   limits: {
-    fileSize: 8 * 1024 * 1024
+    fileSize: 16 * 1024 * 1024 // 16MB para soportar PNG más pesados
   },
   fileFilter: (req, file, callback) => {
-    if (!file.mimetype.startsWith("image/")) {
-      callback(new Error("Solo se permiten imagenes"));
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp"
+    ];
+    
+    if (!allowedTypes.includes(file.mimetype)) {
+      console.log(`[api] Archivo rechazado: ${file.mimetype} - ${file.originalname}`);
+      callback(new Error(`Tipo de archivo no permitido: ${file.mimetype}`));
       return;
     }
-
+    
+    console.log(`[api] Archivo aceptado: ${file.mimetype} - ${file.originalname}`);
     callback(null, true);
   }
 });
@@ -86,15 +96,33 @@ server.use(middlewares);
 server.use("/uploads", express.static(uploadsDir));
 server.use(jsonServer.bodyParser);
 
-server.post("/api/uploads", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    res.status(400).json({ error: "No se recibio ninguna imagen" });
-    return;
-  }
-
-  res.status(201).json({
-    fileName: req.file.filename,
-    url: `/uploads/${req.file.filename}`
+server.post("/api/uploads", (req, res) => {
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      console.error(`[api] Error al subir imagen:`, err);
+      
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(413).json({ error: "La imagen es muy grande (máximo 16MB)" });
+        }
+        return res.status(400).json({ error: `Error de carga: ${err.message}` });
+      }
+      
+      return res.status(400).json({ error: err.message || "Error al subir la imagen" });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ error: "No se recibió ninguna imagen" });
+    }
+    
+    console.log(`[api] Imagen guardada: ${req.file.filename} (${req.file.size} bytes)`);
+    
+    res.status(201).json({
+      fileName: req.file.filename,
+      url: `/uploads/${req.file.filename}`,
+      size: req.file.size,
+      mimetype: req.file.mimetype
+    });
   });
 });
 
