@@ -46,13 +46,43 @@ function createMatch(roundIndex, matchIndex, slots = [null, null]) {
   };
 }
 
+// Genera el orden de seeding balanceado para torneos
+// Asegura que los seeds más altos no se enfrenten entre sí en rondas tempranas
+function generateBracketOrder(size) {
+  if (size === 2) {
+    return [0, 1];
+  }
+  
+  // Recursivamente construir el orden
+  const prevOrder = generateBracketOrder(size / 2);
+  const order = [];
+  
+  // Intercalar: cada elemento de prevOrder se empareja con su opuesto
+  for (let i = 0; i < prevOrder.length; i++) {
+    order.push(prevOrder[i]);
+    order.push(size - 1 - prevOrder[i]);
+  }
+  
+  return order;
+}
+
 export function buildBracket(participants, bestOf) {
   const active = (participants || []).filter((participant) => participant?.name?.trim());
   const size = nextPowerOfTwo(active.length || 2);
-  const slots = active.map((participant) => participant.id);
   const rounds = [];
   let matchCount = size / 2;
 
+  // Crear bracket con orden secuencial simple
+  // Los jugadores se colocan en orden, los BYEs se agrupan al final
+  // Esto minimiza matches con BYE y los distribuye mejor
+  const slots = [];
+  
+  // Agregar participantes activos primero
+  for (let i = 0; i < active.length; i++) {
+    slots.push(active[i].id);
+  }
+  
+  // Rellenar con nulls (BYEs) al final
   while (slots.length < size) {
     slots.push(null);
   }

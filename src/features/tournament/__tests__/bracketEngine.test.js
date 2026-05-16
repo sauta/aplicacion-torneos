@@ -139,6 +139,7 @@ describe('bracketEngine - Bracket Building', () => {
       const rounds = buildBracket(mockParticipants, 3);
       const firstRound = rounds[0];
       
+      // Con orden secuencial: distribuye BYEs al final del bracket
       expect(firstRound[0].slots).toEqual(['p1', 'p2']);
       expect(firstRound[1].slots).toEqual(['p3', 'p4']);
     });
