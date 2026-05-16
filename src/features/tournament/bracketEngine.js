@@ -190,11 +190,47 @@ export function recalculateBracket(tournament) {
       match.winner = resolveWinner(match, bestOf, roundIndex);
 
       if (roundIndex < tournament.rounds.length - 1) {
-        const nextMatch = tournament.rounds[roundIndex + 1][Math.floor(matchIndex / 2)];
-        const nextSlot = matchIndex % 2;
-
-        if (nextMatch) {
-          nextMatch.slots[nextSlot] = match.winner || null;
+        const nextRound = tournament.rounds[roundIndex + 1];
+        const hasBye = !match.slots[0] || !match.slots[1];
+        
+        // Detectar si el bracket tiene BYEs (número impar de participantes)
+        const hasAnyByeInRound = round.some(m => !m.slots[0] || !m.slots[1]);
+        
+        // Encontrar el último match con al menos un participante
+        const lastVisibleMatchIndex = round.reduce((lastIdx, m, i) => {
+          return (m.slots[0] || m.slots[1]) ? i : lastIdx;
+        }, -1);
+        
+        const isLastVisibleMatch = matchIndex === lastVisibleMatchIndex;
+        const isSecondToLastVisible = matchIndex === lastVisibleMatchIndex - 1;
+        const isFirstMatch = matchIndex === 0;
+        
+        // Lógica especial SOLO para brackets con BYEs
+        if (roundIndex === 0 && hasAnyByeInRound && isLastVisibleMatch && hasBye) {
+          // El último match visible con BYE (Fuko) va al primer slot de VS 1
+          if (nextRound[0]) {
+            nextRound[0].slots[0] = match.winner || null;
+          }
+        } else if (roundIndex === 0 && hasAnyByeInRound && isSecondToLastVisible) {
+          // El penúltimo match visible (Rorro vs Sauta) va a última semifinal con BYE
+          const lastSemifinal = nextRound[nextRound.length - 1];
+          if (lastSemifinal) {
+            lastSemifinal.slots[0] = match.winner || null;
+            lastSemifinal.slots[1] = null; // Asegurar BYE
+          }
+        } else if (roundIndex === 0 && hasAnyByeInRound && isFirstMatch) {
+          // El primer match (Toruga vs DaniKpi) va al segundo slot de VS 1
+          if (nextRound[0]) {
+            nextRound[0].slots[1] = match.winner || null;
+          }
+        } else {
+          // Propagación estándar
+          const nextMatch = nextRound[Math.floor(matchIndex / 2)];
+          const nextSlot = matchIndex % 2;
+          
+          if (nextMatch) {
+            nextMatch.slots[nextSlot] = match.winner || null;
+          }
         }
       }
     });
