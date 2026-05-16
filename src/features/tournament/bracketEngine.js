@@ -127,18 +127,16 @@ function resolveWinner(match, bestOf, roundIndex) {
   const scores = match.scores || [0, 0];
   const target = winsNeeded(bestOf);
 
-  // BYE automático solo en la primera ronda
-  if (roundIndex === 0) {
-    if (slots[0] && !slots[1]) {
-      return slots[0];
-    }
-
-    if (!slots[0] && slots[1]) {
-      return slots[1];
-    }
+  // BYE automático en cualquier ronda
+  if (slots[0] && !slots[1]) {
+    return slots[0];
   }
 
-  // En rondas posteriores, ambos participantes deben estar presentes
+  if (!slots[0] && slots[1]) {
+    return slots[1];
+  }
+
+  // Ambos slots vacíos
   if (!slots[0] || !slots[1]) {
     return null;
   }
